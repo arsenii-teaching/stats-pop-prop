@@ -99,13 +99,13 @@
 <body>
 <header>
   <h1>Who goes to the board?</h1>
-  <p>Each draw: a simple random sample of 5 students</p>
+  <p>Each draw: a simple random sample of 6 students</p>
 </header>
 
 <div class="wrap">
   <div id="stageWrap">
     <div id="room">
-      <div id="board"><div class="l1">Simple random sample</div><div class="l2">n = 5</div></div>
+      <div id="board"><div class="l1">Simple random sample</div><div class="l2">n = 6</div></div>
       <div id="cone"></div>
       <div id="tBubble" class="bubble"></div>
     </div>
@@ -126,7 +126,7 @@
   const GIRLS = ["DL","PArm","CB","PB","Kh","MD","HA","PM"];
   const BOYS  = ["Ki","L","LS1","LS2","HC","UP","RE"];
   const STUDENTS = [...GIRLS.map(n => ({name:n, g:"girl"})), ...BOYS.map(n => ({name:n, g:"boy"}))];
-  const N = STUDENTS.length, n = 5;
+  const N = STUDENTS.length, n = 6;
 
   // ---------- room geometry (inner 800 x 680) ----------
   const ROOM_W = 812, ROOM_H = 692;
@@ -140,7 +140,7 @@
     PAIR_SEATS.push([PAIR_X[pi]-HALF_GAP, r.y+SEAT_DY], [PAIR_X[pi]+HALF_GAP, r.y+SEAT_DY]);
   }));
 
-  const BOARD_SPOTS = [[250,190],[325,190],[400,190],[475,190],[550,190]];
+  const BOARD_SPOTS = [[225,190],[295,190],[365,190],[435,190],[505,190],[575,190]];
   const TEACHER = [400,122];
   const G_HOME = [BACK_X[1], BACK_Y+SEAT_DY];
   const G_SPOTS = [[70,635],[740,635],[70,320],[740,320],[740,215],[70,215],[300,640],[510,640]];
@@ -307,7 +307,7 @@
     await sendBack();
     total = 0; $("log").innerHTML = ""; $("empty").style.display = "";
     document.querySelector("#board .l1").textContent = "Simple random sample";
-    document.querySelector("#board .l2").textContent = "n = 5";
+    document.querySelector("#board .l2").textContent = "n = 6";
     setBusy(false);
   };
 
