@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Class Sample Draw</title>
+<style>
+  :root{
+    --bg:#f4f1ea; --ink:#2b2b2b; --muted:#6b6b6b;
+    --boy:#3b82f6; --girl:#f472b6; --teacher:#8b5cf6; --principal:#4b5563;
+    --board:#2f4f3a; --wood:#c8a46a; --wood-dark:#8b6b45; --panel:#ffffff;
+    --true:#dc2626; --glass:#9ccbe8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  header{text-align:center;padding:14px 16px 0}
+  header h1{margin:0;font-size:22px}
+  header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+  .wrap{display:flex;flex-wrap:wrap;gap:18px;padding:16px;justify-content:center;align-items:flex-start}
+
+  /* ---------- classroom ---------- */
+  #stageWrap{position:relative;flex:none}
+  #room{
+    position:absolute;left:0;top:0;width:812px;height:692px;transform-origin:0 0;
+    border:6px solid var(--wood-dark);border-radius:10px;overflow:hidden;
+    background:
+      repeating-linear-gradient(0deg,transparent 0 59px,rgba(0,0,0,.04) 59px 60px),
+      repeating-linear-gradient(90deg,transparent 0 59px,rgba(0,0,0,.04) 59px 60px),
+      #efe6d3;
+  }
+  #board{
+    position:absolute;left:170px;top:12px;width:460px;height:80px;background:var(--board);
+    border:6px solid #a0784a;border-radius:4px;color:#f2f2e9;
+    font-family:"Comic Sans MS","Chalkboard SE","Segoe Print",cursive;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    box-shadow:0 3px 0 rgba(0,0,0,.15);
+  }
+  #board .l1{font-size:14px;opacity:.85}
+  #board .l2{font-size:20px}
+  .desk{position:absolute;height:22px;background:var(--wood);border:2px solid var(--wood-dark);
+    border-radius:4px;transform:translate(-50%,-50%);z-index:2}
+  .wall{position:absolute;width:12px}
+  .wall.left{left:-2px} .wall.right{right:-2px}
+  .wall.window{height:72px;background:var(--glass);border:2px solid var(--wood-dark)}
+  .wall.door{height:82px;background:var(--wood-dark)}
+  .wall.door::after{content:"";position:absolute;left:14px;top:0;width:78px;height:82px;
+    border:2px dashed rgba(139,107,69,.35);border-left:0;border-radius:0 80px 80px 0}
+
+  .person{position:absolute;width:48px;transform:translate(-50%,-50%);text-align:center;
+    transition:left .9s ease-in-out, top .9s ease-in-out;z-index:5}
+  .person .head{width:20px;height:20px;border-radius:50%;margin:0 auto;background:var(--c)}
+  .person .torso{width:36px;height:20px;border-radius:18px 18px 6px 6px;margin:2px auto 0;background:var(--c);
+    transition:height .4s}
+  .person .tag{display:inline-block;margin-top:2px;font:700 11px system-ui,sans-serif;background:#fff;
+    border:1px solid rgba(0,0,0,.15);border-radius:6px;padding:0 4px;white-space:nowrap}
+  .boy{--c:var(--boy)} .girl{--c:var(--girl)}
+  .teacher{--c:var(--teacher)} .principal{--c:var(--principal);z-index:7}
+  .teacher .head,.teacher .torso{transform:scale(1.15)}
+  .principal.standing .torso{height:30px}
+  .walking .head,.walking .torso{animation:bob .22s infinite alternate}
+  @keyframes bob{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+  .person.picked .tag{background:#fff7c2;border-color:#d4a800}
+
+  .bubble{position:absolute;background:#fff;border:2px solid #333;border-radius:14px;padding:6px 10px;
+    font:600 13px system-ui,sans-serif;max-width:230px;z-index:20;opacity:0;transition:opacity .25s;pointer-events:none}
+  .bubble.show{opacity:1}
+  .bubble::after{content:"";position:absolute;left:-10px;top:14px;border:8px solid transparent;border-right-color:#333}
+  .gbang{position:absolute;left:50%;top:-34px;transform:translateX(-50%) scale(.3);width:28px;height:28px;
+    border-radius:50%;background:#fde047;border:2px solid #333;font:900 18px system-ui;line-height:24px;
+    opacity:0;transition:opacity .2s, transform .2s}
+  .gbang.show{opacity:1;transform:translateX(-50%) scale(1)}
+
+  #cone{position:absolute;width:0;height:0;z-index:1;pointer-events:none;
+    transition:left 2.2s ease-in-out, top 2.2s ease-in-out}
+  #cone svg{position:absolute;transition:transform 1.4s ease-in-out}
+  .principal{transition:left 2.2s ease-in-out, top 2.2s ease-in-out}
+
+  /* ---------- panel ---------- */
+  .panel{background:var(--panel);border-radius:12px;padding:16px;width:380px;max-width:100%;
+    box-shadow:0 2px 10px rgba(0,0,0,.07)}
+  .panel h2{font-size:15px;margin:14px 0 6px}
+  .panel h2:first-child{margin-top:0}
+  .btns{display:flex;flex-wrap:wrap;gap:8px}
+  button{font:600 14px system-ui,sans-serif;border:0;border-radius:8px;padding:9px 12px;cursor:pointer;
+    background:#e5e7eb;color:var(--ink)}
+  button.primary{background:#111827;color:#fff}
+  button:disabled{opacity:.5;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:4px}
+  .chip{font:700 12px system-ui;color:#fff;border-radius:10px;padding:2px 8px;background:var(--c)}
+  .row{font-size:14px;margin:4px 0}
+  .big{font-size:20px;font-weight:700}
+  .muted{color:var(--muted);font-size:12px}
+  label{font-size:13px}
+  select{font:inherit;font-size:13px}
+  #log{margin:0;padding-left:28px;font-size:14px;line-height:1.9;max-height:430px;overflow:auto}
+  #log .chip{margin-right:2px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Who goes to the board?</h1>
+  <p>Each draw: a simple random sample of 5 students</p>
+</header>
+
+<div class="wrap">
+  <div id="stageWrap">
+    <div id="room">
+      <div id="board"><div class="l1">Simple random sample</div><div class="l2">n = 5</div></div>
+      <div id="cone"></div>
+      <div id="tBubble" class="bubble"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <button id="btnDraw" class="primary" style="width:100%;font-size:16px;padding:12px">Draw new sample</button>
+    <h2>Samples so far</h2>
+    <ol id="log" reversed></ol>
+    <div id="empty" class="muted">No samples yet.</div>
+    <button id="btnReset" style="margin-top:10px">Clear list</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---------- the real class ----------
+  const GIRLS = ["DL","PArm","CB","PB","Kh","MD","HA","PM"];
+  const BOYS  = ["Ki","L","LS1","LS2","HC","UP","RE"];
+  const STUDENTS = [...GIRLS.map(n => ({name:n, g:"girl"})), ...BOYS.map(n => ({name:n, g:"boy"}))];
+  const N = STUDENTS.length, n = 5;
+
+  // ---------- room geometry (inner 800 x 680) ----------
+  const ROOM_W = 812, ROOM_H = 692;
+  const PAIR_X = [200, 405, 610];
+  const ROWS = [ {y:270, pairs:[0,1,2]}, {y:365, pairs:[0,1,2]}, {y:460, pairs:[0,2]} ]; // 8 pairs = 16 tables
+  const BACK_Y = 565, BACK_X = [220, 405, 590];                                          // 3 single tables
+  const DESK_W = 54, HALF_GAP = 29, SEAT_DY = 32;
+
+  const PAIR_SEATS = [];
+  ROWS.forEach(r => r.pairs.forEach(pi => {
+    PAIR_SEATS.push([PAIR_X[pi]-HALF_GAP, r.y+SEAT_DY], [PAIR_X[pi]+HALF_GAP, r.y+SEAT_DY]);
+  }));
+
+  const BOARD_SPOTS = [[250,190],[325,190],[400,190],[475,190],[550,190]];
+  const TEACHER = [400,122];
+  const G_HOME = [BACK_X[1], BACK_Y+SEAT_DY];
+  const G_SPOTS = [[70,635],[740,635],[70,320],[740,320],[740,215],[70,215],[300,640],[510,640]];
+
+  const room = document.getElementById("room");
+  const $ = id => document.getElementById(id);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const rand = (a,b) => a + Math.random()*(b-a);
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+  const shuffled = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+  // ---------- fit room to screen ----------
+  const stageWrap = $("stageWrap");
+  function fit(){
+    const s = Math.min(1, (window.innerWidth - 32) / ROOM_W);
+    room.style.transform = `scale(${s})`;
+    stageWrap.style.width = ROOM_W*s + "px";
+    stageWrap.style.height = ROOM_H*s + "px";
+  }
+  window.addEventListener("resize", fit); fit();
+
+  // ---------- build scene ----------
+  function place(el,x,y){ el.style.left = x+"px"; el.style.top = y+"px"; }
+  function addDiv(cls, styles){ const d=document.createElement("div"); d.className=cls; Object.assign(d.style, styles||{}); room.appendChild(d); return d; }
+  function makePerson(cls,label){
+    const d = addDiv("person " + cls);
+    d.innerHTML = `<div class="head"></div><div class="torso"></div><div class="tag">${label}</div>`;
+    return d;
+  }
+
+  // walls: left = door, window, window, door ; right = three windows
+  [["door",100],["window",255],["window",395],["door",545]].forEach(([k,t]) => addDiv(`wall left ${k}`, {top:t+"px"}));
+  [180,330,480].forEach(t => addDiv("wall right window", {top:t+"px"}));
+
+  // desks
+  function desk(x,y,w){ const d = addDiv("desk", {width:w+"px"}); place(d,x,y); }
+  ROWS.forEach(r => r.pairs.forEach(pi => { desk(PAIR_X[pi]-HALF_GAP, r.y, DESK_W); desk(PAIR_X[pi]+HALF_GAP, r.y, DESK_W); }));
+  BACK_X.forEach(x => desk(x, BACK_Y, DESK_W+10));
+
+  const teacher = makePerson("teacher","Arsenii");
+  place(teacher, ...TEACHER);
+  const tBubble = $("tBubble");
+  place(tBubble, TEACHER[0]+40, TEACHER[1]-38);
+
+  const students = STUDENTS.map(s => makePerson(s.g, s.name));
+  let seatOf = [];
+  function assignSeats(){ seatOf = shuffled(PAIR_SEATS).slice(0, N); }
+  assignSeats();
+  students.forEach((el,i) => place(el, ...seatOf[i]));
+
+  // ---------- principal G + field of vision ----------
+  const G = makePerson("principal","G");
+  const bang = document.createElement("div");
+  bang.className = "gbang"; bang.textContent = "!"; G.appendChild(bang);
+  place(G, ...G_HOME);
+
+  const R = 370, HALF = 28 * Math.PI/180;
+  const cone = $("cone");
+  const x1 = R + R*Math.cos(-HALF), y1 = R + R*Math.sin(-HALF);
+  const x2 = R + R*Math.cos(HALF),  y2 = R + R*Math.sin(HALF);
+  cone.innerHTML =
+    `<svg width="${2*R}" height="${2*R}" style="left:${-R}px;top:${-R}px">
+       <defs><radialGradient id="fov" cx="50%" cy="50%" r="50%">
+         <stop offset="0%" stop-color="#facc15" stop-opacity=".45"/>
+         <stop offset="100%" stop-color="#facc15" stop-opacity="0"/>
+       </radialGradient></defs>
+       <path d="M${R},${R} L${x1},${y1} A${R},${R} 0 0 1 ${x2},${y2} Z" fill="url(#fov)"
+             stroke="#eab308" stroke-opacity=".35" stroke-dasharray="4 4"/>
+     </svg>`;
+  const coneSvg = cone.querySelector("svg");
+  place(cone, ...G_HOME);
+
+  const g = { x:G_HOME[0], y:G_HOME[1], home:true, busy:false, ang:-90 };
+  function gaze(target){
+    const delta = ((target - g.ang + 540) % 360) - 180;   // shortest rotation
+    g.ang += delta;
+    coneSvg.style.transform = `rotate(${g.ang}deg)`;
+  }
+  gaze(-90);
+  function gMoveTo(x,y){ g.x=x; g.y=y; place(G,x,y); place(cone,x,y); }
+  function gazeAt(x,y,jitter=0){ gaze(Math.atan2(y-g.y, x-g.x)*180/Math.PI + rand(-jitter,jitter)); }
+  async function gBang(){ bang.classList.add("show"); await sleep(1600); bang.classList.remove("show"); }
+
+  async function gWander(){
+    g.busy = true; g.home = false;
+    G.classList.add("standing"); await sleep(500);
+    const [sx,sy] = pick(G_SPOTS);
+    G.classList.add("walking"); gazeAt(sx,sy); gMoveTo(sx,sy);
+    await sleep(2300); G.classList.remove("walking");
+    for (let i=0;i<3;i++){ gazeAt(400,330,30); if (Math.random()<.35) gBang(); await sleep(rand(1400,2200)); }
+    G.classList.add("walking"); gazeAt(...G_HOME); gMoveTo(...G_HOME);
+    await sleep(2300); G.classList.remove("walking");
+    gaze(-90); await sleep(400);
+    G.classList.remove("standing");
+    g.home = true; g.busy = false;
+  }
+  setInterval(() => {
+    if (g.busy) return;
+    if (g.home && Math.random() < 0.18) { gWander(); return; }
+    gaze(-90 + rand(-55,55));
+    if (Math.random() < 0.2) gBang();
+  }, 2600);
+
+  // ---------- Arsenii's gibberish ----------
+  const SYL = ["blor","fizz","wum","quax","zib","plon","snor","dax","mib","gloop","trin","bop","zork","fla","nix","wob","kru","pim"];
+  const STATSY = ["p-hattio","sigmanoodle","varianzo","bootstrapolis","meanie-weenie","binomifluff","standard wobbliation","randomoso"];
+  const ENDS = ["!", "?!", ", class!", " — trust the sample!", "... obviously.", ", says the Law of Large Noodles!"];
+  function word(){ let w=""; const k=2+Math.floor(Math.random()*2); for(let i=0;i<k;i++) w+=pick(SYL); return w; }
+  function gibberish(){
+    const parts = [];
+    const k = 2 + Math.floor(Math.random()*3);
+    for (let i=0;i<k;i++) parts.push(Math.random()<.3 ? pick(STATSY) : word());
+    let s = parts.join(" ") + pick(ENDS);
+    return s[0].toUpperCase() + s.slice(1);
+  }
+  let bubbleTimer;
+  function teacherSay(text){
+    tBubble.textContent = text; tBubble.classList.add("show");
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(() => tBubble.classList.remove("show"), 3800);
+  }
+
+  // ---------- state ----------
+  let atBoard = [];          // indices of students at the board
+  let total = 0, busy = false;
+  const sampleIdx = () => shuffled([...Array(N).keys()]).slice(0,n);   // SRS of size n
+  const chip = i => `<span class="chip ${STUDENTS[i].g}">${STUDENTS[i].name}</span>`;
+
+  function logSample(idx){
+    total++;
+    const li = document.createElement("li");
+    li.innerHTML = idx.map(chip).join(" ");
+    $("log").prepend(li);
+    $("empty").style.display = "none";
+    document.querySelector("#board .l1").textContent = `Sample #${total}`;
+    document.querySelector("#board .l2").textContent = idx.map(i => STUDENTS[i].name).join(" · ");
+  }
+
+  // ---------- movement ----------
+  async function walk(idxs, targetOf){
+    idxs.forEach(i => { students[i].classList.add("walking"); place(students[i], ...targetOf(i)); });
+    await sleep(950);
+    idxs.forEach(i => students[i].classList.remove("walking"));
+  }
+  async function sendBack(){
+    if (!atBoard.length) return;
+    atBoard.forEach(i => students[i].classList.remove("picked"));
+    await walk(atBoard, i => seatOf[i]);
+    atBoard = [];
+  }
+  async function animateSample(idx){
+    await sendBack();
+    teacherSay(gibberish());
+    atBoard = idx;
+    idx.forEach(i => students[i].classList.add("picked"));
+    await walk(idx, i => BOARD_SPOTS[idx.indexOf(i)]);
+    logSample(idx);
+  }
+  function setBusy(b){ busy=b; ["btnDraw","btnReset"].forEach(id => $(id).disabled = b); }
+
+  $("btnDraw").onclick = async () => { if(busy) return; setBusy(true); await animateSample(sampleIdx()); setBusy(false); };
+  $("btnReset").onclick = async () => {
+    if(busy) return; setBusy(true);
+    await sendBack();
+    total = 0; $("log").innerHTML = ""; $("empty").style.display = "";
+    document.querySelector("#board .l1").textContent = "Simple random sample";
+    document.querySelector("#board .l2").textContent = "n = 5";
+    setBusy(false);
+  };
+
+  setTimeout(() => teacherSay("Welcome, samplers! Zibblorp " + pick(STATSY) + "!"), 600);
+})();
+</script>
+</body>
+</html>
